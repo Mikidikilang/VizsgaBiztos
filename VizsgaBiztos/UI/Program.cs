@@ -32,7 +32,7 @@ namespace VizsgaBiztos.UI
             services.AddScoped<IExamResultService, ExamResultService>();
 
             // Formok regisztrálása
-            services.AddSingleton<MainForm>();
+            services.AddTransient<MainForm>();
             services.AddTransient<LoginForm>();
 
             // UserControls regisztrálása

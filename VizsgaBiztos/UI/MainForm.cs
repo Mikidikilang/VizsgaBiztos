@@ -77,8 +77,16 @@ namespace UI
 
         private void btnLogout_Click(object sender, EventArgs e)
         {
-            var login = _serviceProvider.GetRequiredService<LoginForm>();
-            login.Show();
+            var loginForm = System.Windows.Forms.Application.OpenForms.OfType<LoginForm>().FirstOrDefault();
+            if (loginForm != null)
+            {
+                loginForm.Show();
+            }
+            else
+            {
+                var login = _serviceProvider.GetRequiredService<LoginForm>();
+                login.Show();
+            }
             this.Close();
         }
     }

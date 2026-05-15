@@ -56,6 +56,19 @@ namespace UI
             // Lekérjük az aktuális diákhoz tartozó vizsgákat
             List<Exam> exams = await _examService.GetExamsForStudentAsync(_userService.CurrentUser.Id);
 
+            // Mai vizsgákat szűrjük és értesítést mutatunk
+            var todayExams = exams.Where(e => e.ExamDate.Date == DateTime.Today).ToList();
+            if (todayExams.Count > 0)
+            {
+                string examTitles = string.Join(", ", todayExams.Select(e => e.Sheet?.Title ?? "Ismeretlen vizsga"));
+                MessageBox.Show(
+                    $"Figyelem! A mai napon vizsgád van a következő tárgy(ak)ból: {examTitles}. Készülj fel!",
+                    "Vizsgáról való értesítés",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information
+                );
+            }
+
             if (exams.Count == 0)
             {
                 Label lblNoExams = new Label

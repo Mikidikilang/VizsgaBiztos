@@ -73,7 +73,7 @@ namespace UI
         {
             var questions = await _questionService.GetQuestionsBySheetAsync(sheetId);
             dgvQuestions.DataSource = questions
-                .Select(q => new { q.Id, q.Text, q.QuestionType, q.CorrectAnswer })
+                .Select(q => new { q.Id, Szöveg = q.Text, Kérdéstípus = q.QuestionType, Helyesválasz = q.CorrectAnswer })
                 .ToList();
         }
 
@@ -145,7 +145,6 @@ namespace UI
                     txtSheetTitle.Text = "";
                     pnlRight.Enabled = false;
 
-                    // KRITIKUS: DataSource-ot frissítjük, hogy az UI azonnal eltűnjön a törölt elem
                     await LoadSheetsAsync();
 
                     MessageBox.Show("Adatlap sikeresen törölve!", "Siker", MessageBoxButtons.OK, MessageBoxIcon.Information);

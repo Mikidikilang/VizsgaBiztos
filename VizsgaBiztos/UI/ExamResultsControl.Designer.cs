@@ -33,11 +33,13 @@
             lblExam = new Label();
             pnlSummary = new Panel();
             lblAverage = new Label();
+            btnExportXml = new Button();
             tbcTables = new TabControl();
             tabStudents = new TabPage();
             tabAnalytics = new TabPage();
             dgvResults = new DataGridView();
             dgvAnalytics = new DataGridView();
+            pieChart = new Panel();  // Panel helyett a kördiagramhoz
             pnlTop.SuspendLayout();
             pnlSummary.SuspendLayout();
             tbcTables.SuspendLayout();
@@ -78,6 +80,7 @@
             // 
             // pnlSummary
             // 
+            pnlSummary.Controls.Add(btnExportXml);
             pnlSummary.Controls.Add(lblAverage);
             pnlSummary.Dock = DockStyle.Top;
             pnlSummary.Location = new Point(0, 50);
@@ -94,6 +97,19 @@
             lblAverage.Size = new Size(285, 45);
             lblAverage.TabIndex = 0;
             lblAverage.Text = "Vizsga átlaga: - %";
+            // 
+            // btnExportXml
+            // 
+            btnExportXml.BackColor = Color.FromArgb(240, 240, 240);
+            btnExportXml.Cursor = Cursors.Hand;
+            btnExportXml.FlatStyle = FlatStyle.Flat;
+            btnExportXml.Location = new Point(650, 25);
+            btnExportXml.Name = "btnExportXml";
+            btnExportXml.Size = new Size(130, 40);
+            btnExportXml.TabIndex = 1;
+            btnExportXml.Text = "Exportálás XML-be";
+            btnExportXml.UseVisualStyleBackColor = false;
+            btnExportXml.Click += btnExportXml_Click;
             // 
             // tbcTables
             // 
@@ -118,6 +134,7 @@
             // 
             // tabAnalytics
             // 
+            tabAnalytics.Controls.Add(pieChart);
             tabAnalytics.Controls.Add(dgvAnalytics);
             tabAnalytics.Location = new Point(4, 34);
             tabAnalytics.Name = "tabAnalytics";
@@ -139,17 +156,26 @@
             dgvResults.Size = new Size(792, 432);
             dgvResults.TabIndex = 0;
             // 
-            // dgvAnalytics
+            // pieChart
+            // 
+            pieChart.Dock = DockStyle.Right;
+            pieChart.Location = new Point(400, 0);
+            pieChart.Name = "pieChart";
+            pieChart.Size = new Size(392, 432);
+            pieChart.TabIndex = 1;
+            pieChart.BorderStyle = BorderStyle.FixedSingle;
+            pieChart.AutoScroll = true;
+            // \n            // dgvAnalytics
             // 
             dgvAnalytics.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             dgvAnalytics.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dgvAnalytics.Dock = DockStyle.Fill;
+            dgvAnalytics.Dock = DockStyle.Left;
             dgvAnalytics.Location = new Point(0, 0);
             dgvAnalytics.Name = "dgvAnalytics";
             dgvAnalytics.ReadOnly = true;
             dgvAnalytics.RowHeadersWidth = 62;
             dgvAnalytics.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-            dgvAnalytics.Size = new Size(792, 432);
+            dgvAnalytics.Size = new Size(400, 432);
             dgvAnalytics.TabIndex = 0;
             // 
             // ExamResultsControl
@@ -180,10 +206,12 @@
         private Panel pnlSummary;
         private ComboBox cmbExams;
         private Label lblAverage;
+        private Button btnExportXml;
         private TabControl tbcTables;
         private TabPage tabStudents;
         private TabPage tabAnalytics;
         private DataGridView dgvResults;
         private DataGridView dgvAnalytics;
+        private Panel pieChart;  // Panel a kördiagram vizualizációhoz
     }
 }

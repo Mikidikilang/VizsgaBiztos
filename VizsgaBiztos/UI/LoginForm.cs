@@ -32,6 +32,8 @@ namespace UI
                 MainForm mainForm = Program.ServiceProvider.GetRequiredService<MainForm>();
                 mainForm.InitializeUser();  
                 mainForm.Show();
+                txtPassword.Text = string.Empty;
+                btnLogin.Enabled = true;
                 this.Hide();
             }
             catch (InvalidOperationException ex)
