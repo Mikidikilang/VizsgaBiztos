@@ -159,9 +159,9 @@
             // pieChart
             // 
             pieChart.Dock = DockStyle.Right;
-            pieChart.Location = new Point(400, 0);
+            pieChart.Location = new Point(550, 0);
             pieChart.Name = "pieChart";
-            pieChart.Size = new Size(392, 432);
+            pieChart.Size = new Size(242, 432);
             pieChart.TabIndex = 1;
             pieChart.BorderStyle = BorderStyle.FixedSingle;
             pieChart.AutoScroll = true;

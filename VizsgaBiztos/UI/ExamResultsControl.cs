@@ -2,12 +2,14 @@
 using Application.DTOs;
 using Domain.Entities;
 using LiveChartsCore;
+using LiveChartsCore.SkiaSharpView;
 using LiveChartsCore.SkiaSharpView.WinForms;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using System.Xml.Serialization;
@@ -67,10 +69,13 @@ namespace UI
 
                 // Kérdés analitika adatainak frissítése
                 var rates = await _resultService.GetQuestionSuccessRatesAsync(examID);
+                var exam = await _examService.GetExamByIdAsync(examID);
+                var questionTexts = exam?.Sheet?.Questions?.ToDictionary(q => q.Id, q => q.Text) ?? new Dictionary<int, string>();
+
                 dgvAnalytics.DataSource = rates.Select((kv, i) => new { KérdésSzám = i + 1, KérdésId = kv.Key, Sikeresség = $"{kv.Value:F1}%" }).ToList();
 
                 // PieChart frissítése kördiagrammal
-                UpdatePieChart(rates);
+                UpdatePieChart(rates, questionTexts);
             }
             catch (InvalidOperationException ex)
             {
@@ -84,15 +89,14 @@ namespace UI
 
         /// <summary>
         /// Kördiagram frissítése a kérdések sikerességi adataival
-        /// (Helyettesítésként szöveges megjelenítés a PieChart-hoz)
+        /// Valódi LiveCharts kördiagramot jelenít meg, valamint a jobb oldali panelben szöveges információkat
         /// </summary>
-        private void UpdatePieChart(Dictionary<int, decimal> successRates)
+        private void UpdatePieChart(Dictionary<int, decimal> successRates, Dictionary<int, string> questionTexts)
         {
             if (pieChart == null || successRates == null || successRates.Count == 0)
                 return;
 
-            // Az elnevezésből "pieChart" - valójában a Designer-ben egy Panel lesz
-            // amely szöveges információkat jelenít meg a kérdések sikerességéről
+            // 1. Az eredeti logika, ami a jobb oldali sávba teszi a progress barokat
             if (pieChart is Panel pnlChart)
             {
                 pnlChart.Controls.Clear();
@@ -134,6 +138,63 @@ namespace UI
                     questionNumber++;
                 }
             }
+
+            // 2. ÚJ LOGIKA: Valódi kördiagram létrehozása a tabAnalytics közepébe
+            // Először eltávolítjuk a régit a memóriaszivárgás elkerülése végett
+            var existingChart = tabAnalytics.Controls.OfType<PieChart>().FirstOrDefault();
+            if (existingChart != null)
+            {
+                tabAnalytics.Controls.Remove(existingChart);
+                existingChart.Dispose();
+            }
+
+            // A sorozatok (szeletek) összeállítása a LiveCharts számára
+            var seriesList = new List<ISeries>();
+            int qNum = 1;
+            foreach (var kvp in successRates)
+            {
+                string questionText = questionTexts.TryGetValue(kvp.Key, out var text) ? text : $"{qNum}. kérdés";
+                
+                // Csonkítás, ha túl hosszú lenne a kérdés szövege a grafikonhoz
+                if (questionText.Length > 50)
+                {
+                    questionText = questionText.Substring(0, 47) + "...";
+                }
+
+                seriesList.Add(new PieSeries<decimal>
+                {
+                    Values = new decimal[] { kvp.Value },
+                    // Névbe beletesszük a százalékot, így a jobb oldali listában is látszik
+                    Name = $"{questionText} ({Math.Round(kvp.Value)}%)",
+                    // Közvetlenül a tortacikkelyekre írjuk a százalékot (sokkal jobban néz ki)
+                    DataLabelsFormatter = point => $"{Math.Round(point.Model)}%",
+                    DataLabelsPaint = new LiveChartsCore.SkiaSharpView.Painting.SolidColorPaint(SkiaSharp.SKColors.Black),
+                    DataLabelsPosition = LiveChartsCore.Measure.PolarLabelsPosition.Outer,
+                    DataLabelsSize = 14
+                });
+                qNum++;
+            }
+
+            // Maga a diagram vezérlő példányosítása
+            var actualPieChartControl = new PieChart
+            {
+                Series = seriesList,
+                Dock = DockStyle.Fill,
+                LegendPosition = LiveChartsCore.Measure.LegendPosition.Right,
+                // Kikapcsoljuk az egeres tooltipet, mert a tizedesek ott megjelennének, és az infó már látszik a cikkelyeken
+                TooltipPosition = LiveChartsCore.Measure.TooltipPosition.Hidden
+            };
+
+            // A tabAnalytics-ba hozzáadjuk a kördiagramot
+            tabAnalytics.Controls.Add(actualPieChartControl);
+
+            // A WinForms z-index/docking sorrend miatt előre hozzuk, hogy az dgvAnalytics és pieChart közötti 
+            // terület maradjon az alapértelmezett szülőnek
+            actualPieChartControl.SendToBack();
+            if (dgvAnalytics != null)
+                dgvAnalytics.BringToFront();
+            if (pieChart != null)
+                pieChart.BringToFront();
         }
 
         /// <summary>
